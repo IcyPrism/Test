@@ -32,7 +32,16 @@
             font-size: 18px;
             margin-top: 10px;
         }
-        
+        #try-again-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -43,7 +52,8 @@
     </div>
     <div class="progress" id="progress-container">0/40</div>
     <div id="score-container" class="score"></div>
-    
+    <div id="timer-container" style="font-size: 18px; margin-bottom: 20px;">Үлдсэн хугацаа: 40:00</div>
+    <button id="try-again-btn" onclick="restartQuiz()">Дахиж оролдох</button>    
     <script>
         // Example dataset (replace this with your actual JSON data)
         const questions = [
@@ -4239,25 +4249,45 @@
     }
 ];
 
-        // Randomly shuffle and select 40 questions
-        const shuffledQuestions = questions.sort(() => Math.random() - 0.5).slice(0, 40);
-
+        let shuffledQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
+        let timer;
 
         const questionContainer = document.getElementById("question-container");
         const choicesContainer = document.getElementById("choices-container");
         const progressContainer = document.getElementById("progress-container");
         const scoreContainer = document.getElementById("score-container");
+        const timerContainer = document.getElementById("timer-container");
+        const tryAgainBtn = document.getElementById("try-again-btn");
+
+        tryAgainBtn.addEventListener("click", restartQuiz);
+
+        function startTimer(duration) {
+            let timeRemaining = duration;
+
+            function updateTimer() {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerContainer.textContent = `Үлдсэн хугацаа: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                } else {
+                    clearInterval(timer);
+                    endQuiz();
+                }
+            }
+
+            timer = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
 
         function showQuestion() {
             const questionData = shuffledQuestions[currentQuestionIndex];
             questionContainer.textContent = questionData.question;
 
-            // Clear previous choices
             choicesContainer.innerHTML = "";
-
-            // Show choices
             questionData.choices.forEach(choice => {
                 const button = document.createElement("button");
                 button.textContent = choice;
@@ -4287,18 +4317,38 @@
         function showScore() {
             questionContainer.textContent = "Тест дууслаа!";
             choicesContainer.innerHTML = "";
-            progressContainer.textContent = `${shuffledQuestions.length}/${shuffledQuestions.length}`; // Update progress
+            progressContainer.textContent = `${shuffledQuestions.length}/${shuffledQuestions.length}`;
 
-            let message = score >= 36 ? "Та тэнцлээ!":"Та тэнцсэнгүй, дахиж оролдоно уу";
-            let messageClass = score >= 36 ? "Тэнцсэн" : "Тэнцээгүй";
+            const message = score >= 36 ? "Та тэнцлээ!" : "Та тэнцсэнгүй, дахиж оролдоно уу";
 
             scoreContainer.innerHTML = `
                 <p>Таны оноо: ${score}/${shuffledQuestions.length}</p>
-                <p class="${messageClass}">${message}</p>
+                <p>${message}</p>
             `;
+
+            tryAgainBtn.style.display = "block";
         }
 
+        function restartQuiz() {
+            clearInterval(timer);
+            shuffledQuestions = questions.sort(() => Math.random() - 0.5).slice(0, 40);
+            currentQuestionIndex = 0;
+            score = 0;
+
+            questionContainer.textContent = "";
+            choicesContainer.innerHTML = "";
+            progressContainer.textContent = "0/40";
+            scoreContainer.innerHTML = "";
+            tryAgainBtn.style.display = "none";
+
+            startTimer(40 * 60);
+            showQuestion();
+        }
+
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5).slice(0, 40);
+        startTimer(40 * 60);
         showQuestion();
     </script>
+<div style="position: absolute; bottom: 10px; left: 10px; font-size: 14px; color: gray;">Developed by Tsenguun</div>
 </body>
 </html>
