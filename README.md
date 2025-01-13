@@ -6,3 +6,8 @@ Features include:
 - Question ordering (1/40)
 - Restart button
 - Correct answer display
+
+How to start the test?
+1. Download the test UI.html
+2. Press on test UI.html
+3. You need a web browser that parses HTML files to load.
